@@ -20,4 +20,4 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           # IMPORTANTE: La ruta DEBE terminar con una barra diagonal (/)
-          server-dir: ./public_html/contratos/
+          server-dir: ./
