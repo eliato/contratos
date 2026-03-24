@@ -16,7 +16,7 @@ jobs:
       - name: 🐘 Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: "8.2"
+          php-version: "8.4"
           extensions: mbstring, openssl, pdo_mysql, fileinfo, tokenizer, xml, ctype, json, bcmath
           coverage: none
 
@@ -38,7 +38,7 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          server-dir: ./contratosaas/
+          server-dir: ./
           exclude: |
             **/.git*
             **/.git*/**
