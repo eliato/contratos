@@ -3,7 +3,7 @@ name: 🚀 Deploy Website via FTP
 on:
   push:
     branches:
-      - main # Asegúrate de que este sea el nombre de tu rama principal
+      - main
 
 jobs:
   web-deploy:
@@ -13,11 +13,49 @@ jobs:
       - name: 🚚 Get latest code
         uses: actions/checkout@v4
 
-      - name: 📂 Sync files
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: 📦 Install JS dependencies & build assets
+        run: npm ci && npm run build
+
+      - name: 🐘 Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          extensions: mbstring, openssl, pdo_mysql, fileinfo, tokenizer, xml, ctype, json, bcmath
+          coverage: none
+
+      - name: 🎼 Install Composer dependencies (production only)
+        run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+
+      - name: 📂 Sync app files → ~/contratosaas/
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          # IMPORTANTE: La ruta DEBE terminar con una barra diagonal (/)
-          server-dir: ./
+          server-dir: ./contratosaas/
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/public/**
+            .env
+            .env.*
+            auth.json
+
+      - name: 🌐 Sync public files → ~/public_html/
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./public/
+          server-dir: ./public_html/
+          exclude: |
+            **/.git*
+            **/.git*/**
