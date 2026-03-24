@@ -13,15 +13,6 @@ jobs:
       - name: 🚚 Get latest code
         uses: actions/checkout@v4
 
-      - name: 🟢 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: "npm"
-
-      - name: 📦 Install JS dependencies & build assets
-        run: npm ci && npm run build
-
       - name: 🐘 Setup PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -31,6 +22,15 @@ jobs:
 
       - name: 🎼 Install Composer dependencies (production only)
         run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: 📦 Install JS dependencies & build assets
+        run: npm ci && npm run build
 
       - name: 📂 Sync app files → ~/contratosaas/
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
