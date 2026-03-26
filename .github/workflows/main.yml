@@ -43,12 +43,19 @@ jobs:
           exclude: |
             **/.git*
             **/.git*/**
+            .github/**
+            .claude/**
             **/node_modules/**
             **/vendor/**
             **/public/**
+            **/storage/**
+            **/tests/**
             .env
             .env.*
             auth.json
+            *.md
+            phpunit.xml
+            pint.json
 
       # ── Paso 2: vendor/ excluyendo aws/ (se sube manualmente, ver README) ─
       - name: 📦 Sync vendor (sin aws/) → ~/contratosaas/vendor/
