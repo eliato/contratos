@@ -50,8 +50,8 @@ jobs:
             .env.*
             auth.json
 
-      # ── Paso 2: vendor/ excluyendo aws-sdk-php (el más pesado) ──────────
-      - name: 📦 Sync vendor (sin aws-sdk-php) → ~/contratosaas/vendor/
+      # ── Paso 2: vendor/ excluyendo aws/ (se sube manualmente, ver README) ─
+      - name: 📦 Sync vendor (sin aws/) → ~/contratosaas/vendor/
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
@@ -61,19 +61,7 @@ jobs:
           server-dir: ./contratosaas/vendor/
           exclude: |
             **/.git*
-            **/aws/aws-sdk-php/**
-
-      # ── Paso 3: solo vendor/aws/aws-sdk-php (conexión fresca) ───────────
-      - name: ☁️ Sync vendor/aws/aws-sdk-php → ~/contratosaas/vendor/aws/
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./vendor/aws/
-          server-dir: ./contratosaas/vendor/aws/
-          exclude: |
-            **/.git*
+            aws/**
 
       # ── Paso 4: public/ → public_html/ ──────────────────────────────────
       - name: 🌐 Sync public/ → ~/public_html/
