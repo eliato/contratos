@@ -42,8 +42,8 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          protocol: sftp
-          port: ${{ secrets.FTP_PORT }}
+          protocol: ftps-legacy
+          port: 990
           server-dir: ./
           exclude: |
             **/.git*
@@ -69,8 +69,8 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          protocol: sftp
-          port: ${{ secrets.FTP_PORT }}
+          protocol: ftps-legacy
+          port: 990
           local-dir: ./public/
           server-dir: ./public_html/
           exclude: |
