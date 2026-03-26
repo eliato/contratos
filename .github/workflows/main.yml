@@ -13,16 +13,6 @@ jobs:
       - name: 🚚 Get latest code
         uses: actions/checkout@v4
 
-      - name: 🐘 Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: "8.4"
-          extensions: mbstring, openssl, pdo_mysql, fileinfo, tokenizer, xml, ctype, json, bcmath
-          coverage: none
-
-      - name: 🎼 Install Composer dependencies (production only)
-        run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
-
       - name: 🟢 Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -32,7 +22,10 @@ jobs:
       - name: 📦 Install JS dependencies & build assets
         run: npm ci && npm run build
 
-      # ── Paso 1: código de la app (sin vendor/, sin public/) ──────────────
+      # vendor/ NO se sube por FTP — ejecutar composer install en el servidor
+      # via cPanel Terminal: cd ~/contratosaas && composer install --no-dev --optimize-autoloader
+
+      # ── Paso 1: código de la app ──────────────────────────────────────────
       - name: 📂 Sync app code → ~/contratosaas/
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
@@ -58,21 +51,7 @@ jobs:
             phpunit.xml
             pint.json
 
-      # ── Paso 2: vendor/ excluyendo aws/ (se sube manualmente, ver README) ─
-      - name: 📦 Sync vendor (sin aws/) → ~/contratosaas/vendor/
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps
-          local-dir: ./vendor/
-          server-dir: ./contratosaas/vendor/
-          exclude: |
-            **/.git*
-            aws/**
-
-      # ── Paso 4: public/ → public_html/ ──────────────────────────────────
+      # ── Paso 2: assets compilados → public_html/ ─────────────────────────
       - name: 🌐 Sync public/ → ~/public_html/
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
