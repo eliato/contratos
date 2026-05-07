@@ -66,4 +66,4 @@ jobs:
         run: |
           ssh -p ${{ secrets.SSH_PORT }} -i ~/.ssh/id_rsa \
             ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} \
-            "composer --working-dir=/home/sites/35a/9/9bc3d2c17a/contratosya_app install --no-dev --optimize-autoloader --no-interaction && php /home/sites/35a/9/9bc3d2c17a/contratosya_app/artisan migrate --force && php /home/sites/35a/9/9bc3d2c17a/contratosya_app/artisan optimize"
+            "/usr/php84/usr/bin/php /usr/local/bin/composer --working-dir=/home/sites/35a/9/9bc3d2c17a/contratosya_app install --no-dev --optimize-autoloader --no-interaction && /usr/php84/usr/bin/php /home/sites/35a/9/9bc3d2c17a/contratosya_app/artisan migrate --force && /usr/php84/usr/bin/php /home/sites/35a/9/9bc3d2c17a/contratosya_app/artisan optimize"
