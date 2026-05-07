@@ -42,7 +42,7 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Sync app files → contratosya_app/
+      - name: Sync app files
         run: |
           rsync -az --delete \
             --exclude='.git' \
@@ -53,24 +53,17 @@ jobs:
             --exclude='storage' \
             --exclude='.env' \
             --exclude='tests' \
-            -e "ssh -p ${{ secrets.SSH_PORT }}" \
-            ./ ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:~/contratosya_app/
+            -e "ssh -p ${{ secrets.SSH_PORT }} -i ~/.ssh/id_rsa" \
+            ./ ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:/home/sites/35a/9/9bc3d2c17a/contratosya_app/
 
-      - name: Sync build assets → public_html/contratosya/build/
+      - name: Sync build assets
         run: |
           rsync -az --delete \
-            -e "ssh -p ${{ secrets.SSH_PORT }}" \
-            ./public/build/ ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:~/public_html/contratosya/build/
+            -e "ssh -p ${{ secrets.SSH_PORT }} -i ~/.ssh/id_rsa" \
+            ./public/build/ ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:/home/sites/35a/9/9bc3d2c17a/public_html/contratosya/build/
 
       - name: Run deployment commands on server
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT }}
-          script: |
-            cd /home/sites/35a/9/9bc3d2c17a/contratosya_app
-            composer install --no-dev --optimize-autoloader --no-interaction
-            php artisan migrate --force
-            php artisan optimize
+        run: |
+          ssh -p ${{ secrets.SSH_PORT }} -i ~/.ssh/id_rsa \
+            ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} \
+            "composer --working-dir=/home/sites/35a/9/9bc3d2c17a/contratosya_app install --no-dev --optimize-autoloader --no-interaction && php /home/sites/35a/9/9bc3d2c17a/contratosya_app/artisan migrate --force && php /home/sites/35a/9/9bc3d2c17a/contratosya_app/artisan optimize"
