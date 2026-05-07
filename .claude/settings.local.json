@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(/c/Users/Usuario/.config/herd-lite/bin/php:*)"
+      "Bash(/c/Users/Usuario/.config/herd-lite/bin/php:*)",
+      "Bash(xargs grep *)",
+      "Bash(grep -v \"^\\\\s*$\")"
     ]
   }
 }
