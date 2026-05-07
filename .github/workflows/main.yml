@@ -1,4 +1,4 @@
-name: 🚀 Deploy Website via FTP
+name: 🚀 Deploy to Production
 
 on:
   push:
@@ -6,73 +6,59 @@ on:
       - main
 
 jobs:
-  web-deploy:
-    name: 🎉 Deploying...
+  deploy:
+    name: Deploy
     runs-on: ubuntu-latest
+
     steps:
-      - name: 🚚 Get latest code
-        uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4.2.2
 
-      - name: 🐘 Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: "8.4"
-          extensions: mbstring, openssl, pdo_mysql, fileinfo, tokenizer, xml, ctype, json, bcmath
-          coverage: none
-
-      - name: 🎼 Composer install (solo para el build de assets)
-        run: composer install --no-interaction --prefer-dist
-
-      - name: 🟢 Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4.4.0
         with:
           node-version: "20"
           cache: "npm"
 
-      - name: 📦 Install JS dependencies & build assets
+      - name: Build assets
         run: npm ci && npm run build
 
-      # vendor/ NO se sube por FTP — ejecutar composer install en el servidor
-      # via cPanel Terminal: cd ~/contratosaas && composer install --no-dev --optimize-autoloader
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
-      # ── Paso 1: código de la app ──────────────────────────────────────────
-      - name: 📂 Sync app code → ~/contratosaas/
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps-legacy
-          port: 990
-          server-dir: ./
-          exclude: |
-            **/.git*
-            **/.git*/**
-            .github/**
-            .claude/**
-            **/node_modules/**
-            **/vendor/**
-            **/public/**
-            **/storage/**
-            **/tests/**
-            .env
-            .env.*
-            auth.json
-            *.md
-            phpunit.xml
-            pint.json
+      - name: Sync app files → contratosya_app/
+        run: |
+          rsync -az --delete \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='node_modules' \
+            --exclude='vendor' \
+            --exclude='public' \
+            --exclude='storage' \
+            --exclude='.env' \
+            --exclude='tests' \
+            -e "ssh -p ${{ secrets.SSH_PORT }}" \
+            ./ ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:~/contratosya_app/
 
-      # ── Paso 2: assets compilados → public_html/ ─────────────────────────
-      - name: 🌐 Sync public/ → ~/public_html/
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+      - name: Sync build assets → public_html/contratosya/build/
+        run: |
+          rsync -az --delete \
+            -e "ssh -p ${{ secrets.SSH_PORT }}" \
+            ./public/build/ ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:~/public_html/contratosya/build/
+
+      - name: Run deployment commands on server
+        uses: appleboy/ssh-action@v1.0.3
         with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps-legacy
-          port: 990
-          local-dir: ./public/
-          server-dir: ./public_html/
-          exclude: |
-            **/.git*
-            **/.git*/**
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            cd ~/contratosya_app
+            composer install --no-dev --optimize-autoloader --no-interaction
+            php artisan migrate --force
+            php artisan optimize

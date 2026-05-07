@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use Livewire\Volt\Volt;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -26,6 +27,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Volt::mount([
+            resource_path('views/pages'),
+            resource_path('views/livewire'),
+        ]);
+
         $this->configureDefaults();
         $this->configureRateLimiting();
         $this->applyDynamicSettings();
