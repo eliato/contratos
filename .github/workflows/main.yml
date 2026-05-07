@@ -70,7 +70,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            cd ~/contratosya_app
+            cd /home/sites/35a/9/9bc3d2c17a/contratosya_app
             composer install --no-dev --optimize-autoloader --no-interaction
             php artisan migrate --force
             php artisan optimize
